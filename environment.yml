@@ -1,0 +1,3 @@
+name: cfdflow
+dependencies:
+  - python==3.10
