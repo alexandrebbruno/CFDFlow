@@ -1,15 +1,14 @@
 #include "Mesh.hpp"
 #include <armadillo>
+#include <memory>
 
 class Solver{
     private:
         Mesh mesh;
-        arma::mat A;
+        arma::sp_mat A;
         arma::vec B;
 
-        void fill_matrix_A(arma::mat &A, double dt);
-
-        void fill_matrix_B(double dt);
+        void fill_matrix(double dt);
 
     public:
 

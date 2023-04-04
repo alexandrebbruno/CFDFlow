@@ -67,16 +67,17 @@ void Mesh::fill_cell_neighbors(){
     }
 }
 
-//comtinue
 void Mesh::fill_prescribed_temperature(const double Tw, const double Te){
     const auto number_of_cells = this->number_of_cells_in_x * this->number_of_cells_in_y;
     for(size_t p_id = 0; p_id < number_of_cells; p_id++){
         const auto neighbor = this->neighbors[p_id];
         if (neighbor[Direction::West] == -1){
-            this->prescribedT
+            this->prescribedT[p_id] = {-1000000 , -1000000};
+            this->prescribedT[p_id][Direction::West] = Tw;
         }
         if (neighbor[Direction::East] == -1){
-
+            this->prescribedT[p_id] = {-1000000 , -1000000};
+            this->prescribedT[p_id][Direction::East] = Te;
         }
     }
 }
@@ -118,6 +119,10 @@ bool Mesh::has_south_neighbor(const int& cell_id){
     }else{
         return false;
     }
+}
+
+const std::array<int, 2> Mesh::get_prescribed_temperature(const int p_id){
+    return this->prescribedT[p_id];
 }
 
 const std::vector<std::array<int, 4>> Mesh::get_neighbors(){

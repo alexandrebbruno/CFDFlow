@@ -69,6 +69,8 @@ class Mesh {
 public:
     Mesh(int number_of_cells_in_x, int number_of_cells_in_y, double dx, double dy, double Tw, double Te);
 
+    const std::array<int, 2> get_prescribed_temperature(const int p_id);
+
     const std::vector<std::array<int, 4>> get_neighbors();
 
     const std::vector<std::array<Vertex, 4>> get_coordinates();
