@@ -2,8 +2,9 @@
 #include <array>
 #include <string>
 #include <iostream>
+#include <unordered_map>
 
-enum class Direction {
+enum Direction {
     East,
     West,
     South,
@@ -24,11 +25,12 @@ class Vertex {
         Vertex(const int x, const int y): x_coordinate(x), y_coordinate(y){};
 };
 
-class mesh {
+class Mesh {
     private:
         std::vector<std::array<Vertex, 4>> coordinates;
         std::vector<std::array<int, 4>> neighbors;
         std::vector<Property<float>> properties;
+        std::unordered_map<int, std::array<int, 2>> prescribedT;
         int number_of_cells_in_x;
         int number_of_cells_in_y;
         double dx;
@@ -49,6 +51,8 @@ class mesh {
     */
     void fill_coordinates();
 
+    void fill_prescribed_temperature(double Tw, double Te);
+
     bool has_west_neighbor(const int& cell_id);
 
     bool has_east_neighbor(const int& cell_id);
@@ -63,7 +67,25 @@ class mesh {
 
 
 public:
-    mesh(int number_of_cells_in_x, int number_of_cells_in_y, double dx, double dy);
-    
-    ~mesh();
+    Mesh(int number_of_cells_in_x, int number_of_cells_in_y, double dx, double dy, double Tw, double Te);
+
+    const std::vector<std::array<int, 4>> get_neighbors();
+
+    const std::vector<std::array<Vertex, 4>> get_coordinates();
+
+    const int get_number_of_cells();
+
+    const Property<float> get_property(const std::string& property_name);
+
+    const double compute_dx(const int& p);
+
+    const double compute_dy(const int& p);
+
+    const double compute_dx_between_neighbors(const int& i, const int& j);
+
+    const double compute_dy_between_neighbors(const int& i, const int& j);
+
+    const double compute_property_between_neighbors(const std::string& property_name, const int i, const int j);
+
+    ~Mesh();
 };

@@ -1,3 +1,4 @@
 name: cfdflow
 dependencies:
   - cmake
+  - armadillo
