@@ -1,8 +1,11 @@
+#pragma once
+
 #include <vector>
 #include <array>
 #include <string>
 #include <iostream>
 #include <unordered_map>
+#include <armadillo>
 
 enum Direction {
     East,
@@ -15,6 +18,8 @@ class Property{
     public:
         std::string name;
         std::vector<T> values;
+
+        Property(const std::string& name, std::vector<T> values): name(name), values(values){};
 };
 
 class Vertex {
@@ -29,12 +34,18 @@ class Mesh {
     private:
         std::vector<std::array<Vertex, 4>> coordinates;
         std::vector<std::array<int, 4>> neighbors;
-        std::vector<Property<float>> properties;
-        std::unordered_map<int, std::array<int, 2>> prescribedT;
+        std::vector<Property<double>> properties;
+        std::vector<arma::vec> temperature;
         int number_of_cells_in_x;
         int number_of_cells_in_y;
+        double T0;
         double dx;
         double dy;
+        double Te;
+        double Tw;
+        double Tn;
+        double Ts;
+        
 
     
     // Fill the neighbors of each cells
@@ -43,15 +54,15 @@ class Mesh {
     /*
     Fill coordinates of all vertex of each cell.
     
-    P4 ---- P3
+    P3 ---- P2
     |       |
     |  Cell |
     |       | 
-    P1 ---- P2 
+    P0 ---- P1 
     */
     void fill_coordinates();
 
-    void fill_prescribed_temperature(double Tw, double Te);
+    //void fill_prescribed_temperature(double Tw, double Te);
 
     bool has_west_neighbor(const int& cell_id);
 
@@ -67,9 +78,21 @@ class Mesh {
 
 
 public:
-    Mesh(int number_of_cells_in_x, int number_of_cells_in_y, double dx, double dy, double Tw, double Te);
+    Mesh(int number_of_cells_in_x, int number_of_cells_in_y, double dx, double dy, double Tw, double Te, double Tn, double Ts, double T0);
 
-    const std::array<int, 2> get_prescribed_temperature(const int p_id);
+    void set_initial_contidion();
+
+    void set_property(const std::string& property_name, const double& property_values);
+
+    void add_temperature(const arma::vec& temperature);
+
+    const std::vector<double> compute_x_cell_center_coordinates();
+    
+    const std::vector<double> compute_y_cell_center_coordinates();
+
+    const arma::vec& get_last_temperature();
+
+    const std::array<double, 4> get_prescribed_temperature();
 
     const std::vector<std::array<int, 4>> get_neighbors();
 
@@ -77,7 +100,7 @@ public:
 
     const int get_number_of_cells();
 
-    const Property<float> get_property(const std::string& property_name);
+    const Property<double> get_property(const std::string& property_name);
 
     const double compute_dx(const int& p);
 

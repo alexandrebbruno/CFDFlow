@@ -1,0 +1,11 @@
+name: cfdflow
+
+dependencies:
+  - cmake
+  - armadillo
+  - flask
+  - pybind11
+
+environment:
+  PYTHONPATH: 
+    - {{ root }}/build/libCFDFlow

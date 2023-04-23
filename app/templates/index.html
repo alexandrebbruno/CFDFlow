@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>CFD Simulator</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+	<script src="{{ url_for('static', filename='index.js') }}"></script>
+
+
+</head>
+<body>
+	<div class="container">
+		<h1>Simulator</h1>
+		<form method="POST">
+			<table>
+			  <tr>
+				<td><label for="Nx">Nx:</label></td>
+				<td><input type="number" id="Nx" name="Nx" required></td>
+				<td><label for="Ny">Ny:</label></td>
+				<td><input type="number" id="Ny" name="Ny" required></td>
+				<td><label for="Lx">Lx:</label></td>
+				<td><input type="number" id="Lx" name="Lx" required></td>
+				<td><label for="Ly">Ly:</label></td>
+				<td><input type="number" id="Ly" name="Ly" required></td>
+			  </tr>
+			  <tr>
+				<td><label for="Tw">Tw:</label></td>
+				<td><input type="number" id="Tw" name="Tw" required></td>
+				<td><label for="Te">Te:</label></td>
+				<td><input type="number" id="Te" name="Te" required></td>
+				<td><label for="Tn">Tn:</label></td>
+				<td><input type="number" id="Tn" name="Tn" required></td>
+				<td><label for="Ts">Ts:</label></td>
+				<td><input type="number" id="Ts" name="Ts" required></td>
+			  </tr>
+			  <tr>
+				<td><label for="ro">Density:</label></td>
+				<td><input type="number" id="ro" name="ro" required></td>
+				<td><label for="k">k:</label></td>
+				<td><input type="number" id="k" name="k" required></td>
+				<td><label for="cp">cp:</label></td>
+				<td><input type="number" id="cp" name="cp" required></td>
+			  </tr>
+			  <tr>
+				<td><label for="total_t">Total time:</label></td>
+				<td><input type="number" id="total_t" name="total_t" required></td>
+			  </tr>
+			</table>
+			<button type="button" class="btn btn-primary" id="simulate-btn">Simulate</button>
+		</form>
+		<div id="heatmap_id"></div>
+	</div>
+</body>
+</html>

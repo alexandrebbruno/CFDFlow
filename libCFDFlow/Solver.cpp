@@ -1,6 +1,5 @@
 #include "Solver.hpp"
-#include <armadillo>
-
+#include <array>
 
 Solver::Solver(const Mesh &mesh): mesh(mesh){
     const auto number_of_elements = this->mesh.get_number_of_cells();
@@ -10,7 +9,7 @@ Solver::Solver(const Mesh &mesh): mesh(mesh){
 
 void Solver::fill_matrix(double dt){
     auto compute_A = [&](const auto p1_id, const auto p2_id, const auto direction) {
-        auto d = 0.0;
+        auto d = 1.0;
         // TODO: Use SOLID
         if (direction == Direction::West || direction == Direction::East){
             d = this->mesh.compute_dx_between_neighbors(p1_id, p2_id);
@@ -45,6 +44,12 @@ void Solver::fill_matrix(double dt){
         auto Tef = 0;
         auto Awf = 0;
         auto Twf = 0;
+        auto As = 0;
+        auto Asf = 0;
+        auto Tsf = 0;
+        auto An = 0;
+        auto Anf = 0;
+        auto Tnf = 0;
         if (e_id != -1){
             Ae = compute_A(e_id, p_id, Direction::East) * dy_p;
         }else{
@@ -52,7 +57,7 @@ void Solver::fill_matrix(double dt){
             const auto dxf = this->mesh.compute_dx(p_id) / 2.0;
             const auto cpf = this->mesh.get_property("cp").values[p_id];
             Aef = kf * dy_p / (dxf * cpf);
-            Tef = this->mesh.get_prescribed_temperature(p_id)[Direction::East];
+            Tef = this->mesh.get_prescribed_temperature()[Direction::East];
         }
         if (w_id != -1){
             Aw = compute_A(p_id, w_id, Direction::West) * dy_p;
@@ -61,29 +66,44 @@ void Solver::fill_matrix(double dt){
             const auto dxf = this->mesh.compute_dx(p_id) / 2.0;
             const auto cpf = this->mesh.get_property("cp").values[p_id];
             Awf = kf * dy_p / (dxf * cpf);
-            Twf = this->mesh.get_prescribed_temperature(p_id)[Direction::West];
+            Twf = this->mesh.get_prescribed_temperature()[Direction::West];
+        }
+        if (n_id != -1){
+            An = compute_A(n_id, p_id, Direction::North) * dx_p;
+        } else{
+            const auto kf = this->mesh.get_property("k").values[p_id];
+            const auto dyf = this->mesh.compute_dy(p_id) / 2.0;
+            const auto cpf = this->mesh.get_property("cp").values[p_id];
+            Anf = kf * dx_p / (dyf * cpf);
+            Tnf = this->mesh.get_prescribed_temperature()[Direction::North];
+        }
+        if (s_id != -1){
+            As = compute_A(p_id, s_id, Direction::South) * dx_p;
+        } else{
+            const auto kf = this->mesh.get_property("k").values[p_id];
+            const auto dyf = this->mesh.compute_dy(p_id) / 2.0;
+            const auto cpf = this->mesh.get_property("cp").values[p_id];
+            Asf = kf * dx_p / (dyf * cpf);
+            Tsf = this->mesh.get_prescribed_temperature()[Direction::South];
         }
 
         // CC of zero flux
-        const auto An = (n_id == -1) ? 0 : compute_A(n_id, p_id, Direction::North) * dx_p;
-        const auto As = (s_id == -1) ? 0 : compute_A(p_id, s_id, Direction::South) * dx_p;
-
-        const auto Ap = Ae + Aef + Aw + Awf + An + As + (ro_p * dx_p * dy_p)/dt;
-        const auto Ap0 = (this->mesh.get_property("T0").values[p_id] * ro_p * dx_p * dy_p)/dt;
+        const auto Ap = Ae + Aef + Aw + Awf + An + Anf + As + Asf + (ro_p * dx_p * dy_p)/dt;
+        const auto Ap0 = (this->mesh.get_last_temperature()(p_id) * ro_p * dx_p * dy_p)/dt;
         const auto Sp0 = this->mesh.get_property("Sc").values[p_id] * dx_p * dy_p;
-        const auto Bp = Ap0 + Sp0 + Awf * Twf + Aef * Tef;
+        const auto Bp = Ap0 + Sp0 + Awf * Twf + Aef * Tef + Anf * Tnf + Asf * Tsf;
         A(p_id, p_id) = Ap;
         if (w_id != -1){
-            this->A(p_id, w_id) = Aw;
+            this->A(p_id, w_id) = -Aw;
         }
         if (e_id != -1){
-            this->A(p_id, e_id) = Ae;
+            this->A(p_id, e_id) = -Ae;
         }
         if (n_id != -1){
-            this->A(p_id, n_id) = An;
+            this->A(p_id, n_id) = -An;
         }
         if (s_id != -1){
-            this->A(p_id, s_id) = As;
+            this->A(p_id, s_id) = -As;
         }
         this->B(p_id) = Bp;
     }
@@ -92,5 +112,36 @@ void Solver::fill_matrix(double dt){
 void Solver::compute_time_step(double dt){
     this->fill_matrix(dt);
     arma::vec X = arma::spsolve(this->A, this->B);
+    this->mesh.add_temperature(X);
 }
 
+void Solver::solve(int total_time_steps, double dt){
+    for(size_t i = 0; i < total_time_steps; i++){
+        this->compute_time_step(dt);
+    }
+}
+
+std::string Solver::get_A(){
+    // Use a stringstream to write to a string in memory
+    std::stringstream ss;
+    ss << "A = \n" << this->A << "\n\n";
+    return ss.str();
+}
+
+std::string Solver::get_B(){
+    // Use a stringstream to write to a string in memory
+    std::stringstream ss;
+    ss << "B = \n" << this->B << "\n\n";
+    return ss.str();
+}
+
+const std::vector<double> Solver::output_last_temperature(){
+
+    const auto& arma_vec = this->mesh.get_last_temperature();
+    auto std_vector = std::vector<double>();
+    for (auto i = 0; i < arma_vec.size(); i++){
+        std_vector.push_back(arma_vec[i]);
+    }
+
+    return std_vector;
+}
