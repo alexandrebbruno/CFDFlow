@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <iostream>
 #include <stdexcept>      // std::invalid_argument
+#include <cassert>
 
 Mesh::Mesh(int number_of_cells_in_x, int number_of_cells_in_y, double dx, double dy, double Tw, double Te, double Tn, double Ts, double T0):
     number_of_cells_in_x(number_of_cells_in_x), number_of_cells_in_y(number_of_cells_in_y), T0(T0), dx(dx), dy(dy), Tw(Tw), Te(Te), Ts(Ts), Tn(Tn)
