@@ -1,6 +1,6 @@
 import PyCFDFlow
 
-def simulate_CFD(input):
+def simulate(input):
 
     number_of_cells_in_x = int(input['Nx']) 
     number_of_cells_in_y = int(input['Ny'])
