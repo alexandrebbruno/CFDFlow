@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-import simulator2 # import your simulation code here
+import simulator # import your simulation code here
 #import PyCFDFlow
 
 app = Flask(__name__, static_folder='static')
@@ -62,7 +62,7 @@ def simulate():
     # get any parameters needed for the simulation from the request
     # call your simulation function with the parameters and get the results
     data = request.json
-    results = simulator2.simulate(data)
+    results = simulator.simulate(data)
 
     # return the results as a JSON object
     return jsonify(results)
