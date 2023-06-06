@@ -3,7 +3,7 @@ import numpy as np
 def simulate(input):
 
     number_of_cells_in_x = int(input['Nx'])
-    Lx = float(input['Lx'])
+    Lx = int(input['Lx'])
     Tw = float(input['Tw'])
     Te = float(input['Te'])
     Tn = float(input['Tn'])
@@ -13,10 +13,10 @@ def simulate(input):
     k = float(input['k'])
 
     plate_length = Lx
-    max_iter_time = 1000
+    max_iter_time = 10000000
 
     alpha = k/(ro*cp)
-    delta_x = Lx/number_of_cells_in_x
+    delta_x = int(Lx/number_of_cells_in_x)
 
     delta_t = (delta_x ** 2)/(4 * alpha)
     gamma = (alpha * delta_t) / (delta_x ** 2)
@@ -53,7 +53,7 @@ def simulate(input):
     results = {
         'x': xf,
         'y': yf,
-        'z': u[max_iter_time, :, :]
+        'z': u[max_iter_time-1, :, :].tolist()
     }
 
     return results
